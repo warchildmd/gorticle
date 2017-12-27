@@ -9,7 +9,7 @@ import (
 )
 
 type Article struct {
-	Title, Content string
+	Title, Content, Description, Url, Image string
 }
 
 func ParseUrl(url string) (*Article, error) {
@@ -27,15 +27,11 @@ func Parse(body string) (*Article, error) {
 		return nil, err
 	}
 
-	bodyNode := findBody(root)
-	if bodyNode != nil {
-		root = bodyNode
-	}
-	content := getBestContentNode(root)
+	content := getContent(root)
+	metaMap := getMetaMap(root)
 
-	contentText := getTextContentFromNode(content)
-
-	return &Article{"", contentText}, nil
+	return &Article{metaMap["title"], content, metaMap["description"],
+		metaMap["url"], metaMap["image"]}, nil
 }
 
 func readUrl(url string) (string, error) {
@@ -57,4 +53,17 @@ func readUrl(url string) (string, error) {
 
 func cleanText(text string) string {
 	return strings.TrimLeft(text, "\n\t ")
+}
+
+func find(root *html.Node, tag string) *html.Node {
+	for c := root.FirstChild; c != nil; c = c.NextSibling {
+		if c.Type == html.ElementNode && c.Data == tag {
+			return c
+		}
+		x := find(c, tag)
+		if x != nil {
+			return x
+		}
+	}
+	return nil
 }

@@ -11,17 +11,17 @@ var (
 	depthPenalty = 0.5
 )
 
-func findBody(root *html.Node) *html.Node {
-	for c := root.FirstChild; c != nil; c = c.NextSibling {
-		if c.Type == html.ElementNode && c.Data == "body" {
-			return c
-		}
-		x := findBody(c)
-		if x != nil {
-			return x
-		}
+
+func getContent(root *html.Node) string {
+	bodyNode := find(root, "body")
+	if bodyNode == nil {
+		return ""
 	}
-	return nil
+
+	content := getBestContentNode(bodyNode)
+	contentText := getTextContentFromNode(content)
+
+	return contentText
 }
 
 func getBestContentNode(root *html.Node) *html.Node {
